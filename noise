@@ -1,0 +1,20 @@
+#!/bin/sh
+
+alphabet="abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+
+n=${1:-20}
+count=${2:-3}
+
+function randchars() {
+    for i in `seq 1 $1`
+    do
+        x=`expr $RANDOM % ${#alphabet}`
+        printf '%s' "${alphabet:$x:1}"
+    done
+}
+
+for k in `seq 1 $count`
+do
+    randchars $n; echo
+done
+
