@@ -2,19 +2,22 @@
 
 alphabet="abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
-n=${1:-20}
+size=${1:-20}
 count=${2:-3}
 
 function randchars() {
-    for i in `seq 1 $1`
+    n=$1
+    while [ $n -gt 0 ]
     do
         x=`expr $RANDOM % ${#alphabet}`
         printf '%s' "${alphabet:$x:1}"
+	n=$(($n - 1))
     done
 }
 
-for k in `seq 1 $count`
+while [ $count -gt 0 ]
 do
-    randchars $n; echo
+    randchars $size; echo
+    count=$(($count - 1))
 done
 
