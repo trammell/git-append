@@ -14,22 +14,29 @@ def main(args):
         tmp = srcfile.read()
         bytes += len(tmp)
         if args.dryrun:
-            sys.stderr.write(f"""skipping write to file "{args.dstfile.name}"\n""")
+            logging.info("""Dry run: no changes""")
         else:
+            logging.info(
+                f"""Appending {len(tmp)} bytes to {args.dstfile.name}"""
+            )
             args.dstfile.write(tmp)
             force_remove(srcfile.name)
 
-    sys.stderr.write(f"""wrote {bytes} bytes to file "{args.dstfile.name}"\n""")
+    sys.stderr.write(f"Wrote {bytes} bytes to file '{args.dstfile.name}'.\n")
 
 
 def force_remove(filename):
-    """Remove the file. If the file is in github, remove it with `git rm -f`.
-    if not, remove it with `rm -f`"""
+    """Remove file filename.
 
+    If the file is in github, remove it with `git rm -f`, otherwise remove it
+    with `rm -f`
+    """
     if file_in_repo(filename):
         logging.info(f"file {filename} is in the repo")
         logging.debug(f"calling: git rm -f '{filename}'")
-        proc = subprocess.run(["git", "rm", "--force", filename], capture_output=True)
+        proc = subprocess.run(
+            ["git", "rm", "--force", filename], capture_output=True
+        )
         logging.debug(proc)
     else:
         logging.info(f"file {filename} is NOT in the repo")
@@ -51,7 +58,7 @@ def file_in_repo(filename):
 def get_log_level(args):
     if args.debug:
         return logging.DEBUG
-    elif args.verbose:
+    if args.verbose:
         return logging.INFO
     return logging.WARNING
 
@@ -60,11 +67,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog="git-append", description="Append and remove files in git"
     )
-    parser.add_argument("-d", "--debug", action="store_true", default=False)
-    parser.add_argument("-v", "--verbose", action="store_true", default=False)
+    parser.add_argument("--debug", "-d", action="store_true", default=False)
+    parser.add_argument("--verbose", "-v", action="store_true", default=False)
     parser.add_argument(
         "--dry-run",
-        "-n",
         action=argparse.BooleanOptionalAction,
         dest="dryrun",
         default=False,
@@ -82,5 +88,12 @@ if __name__ == "__main__":
         help="Destination file to be extended with source contents",
     )
     args = parser.parse_args()
-    logging.basicConfig(format='>>> %(message)s',level=get_log_level(args))
+    logging.basicConfig(format=">>> %(message)s", level=get_log_level(args))
+    logging.debug(args)
+
+    # check for srcfile==dstfile
+    if args.dstfile.name in [x.name for x in args.srcfile]:
+        logging.error(f"found dstfile in srcfile list, that's bad")
+        exit(1)
+
     main(args)
