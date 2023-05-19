@@ -9,7 +9,7 @@ lint:
 	poetry run flake8 src/ tests/
 	poetry run pydocstyle src/ tests/
 	poetry run mypy src/ tests/
-	poetry run bandit -c pyproject.toml -r src/
+	poetry run bandit --quiet -c pyproject.toml -r src/
 
 test:
 	poetry run coverage run -m pytest -vvv
