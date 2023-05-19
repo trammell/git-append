@@ -11,7 +11,7 @@ import subprocess
 def get_argparser() -> ArgumentParser:
     """Parse command-line arguments."""
     parser = ArgumentParser(
-        prog="git-append", description="Append and remove files in git"
+        prog="git-append", description="Concatenate files in git"
     )
     parser.add_argument("--debug", "-d", action="store_true", default=False)
     parser.add_argument("--verbose", "-v", action="store_true", default=False)
@@ -23,33 +23,37 @@ def get_argparser() -> ArgumentParser:
         help="A 'dry-run' makes no file changes",
     )
     parser.add_argument(
-        "srcfile",
-        nargs="+",
-        type=argparse.FileType("r"),
-        help="Source file to be appended to dstfile and removed",
-    )
-    parser.add_argument(
         "dstfile",
         type=argparse.FileType("a"),
-        help="Destination file to be extended with source contents",
+        help="Destination file, to be appended to from source files",
+    )
+    parser.add_argument(
+        "srcfiles",
+        nargs="+",
+        type=argparse.FileType("r"),
+        help="Source files to be added to dstfile and then removed",
     )
     return parser
 
 
-def main(parser: ArgumentParser) -> None:
+def main() -> None:
     """Parse command-line arguments and manage file appending."""
+    parser = get_argparser()
     args = parser.parse_args()
     logging.basicConfig(format=">>> %(message)s", level=get_log_level(args))
     logging.debug(args)
 
-    # check for srcfile==dstfile
-    if args.dstfile.name in [x.name for x in args.srcfile]:
-        logging.error("found dstfile in srcfile list, that's bad")
+    # check for dstfile in *srcfiles
+    if args.dstfile.name in [x.name for x in args.srcfiles]:
+        logging.error(
+            f"found destination file '{args.dstfile.name}'"
+            "in list of source files, that's bad"
+        )
         exit(1)
 
-    """Append args.srcfile to args.destfile."""
+    # Loop over srcfiles, appending each to dstfile.
     bytes = 0
-    for srcfile in args.srcfile:
+    for srcfile in args.srcfiles:
         tmp = srcfile.read()
         bytes += len(tmp)
         if args.dryrun:
@@ -68,7 +72,7 @@ def force_remove(filename: str) -> None:
     """Remove file filename.
 
     If the file is in github, remove it with `git rm -f`, otherwise remove it
-    with `rm -f`
+    with `rm -f`.
     """
     if file_in_repo(filename):
         logging.info(f"file {filename} is in the repo")

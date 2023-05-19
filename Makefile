@@ -5,13 +5,17 @@ format:
 	poetry run black src/
 
 lint:
-	-poetry run flake8 src/
-	-poetry run pydocstyle src/
-	-poetry run mypy src/
-	-poetry run bandit -c pyproject.toml -r src/ --quiet
+	poetry check
+	poetry run flake8 src/ tests/
+	poetry run pydocstyle src/ tests/
+	poetry run mypy src/ tests/
+	poetry run bandit -c pyproject.toml -r src/
 
 test:
-	poetry run pytest tests/
+	poetry run coverage run -m pytest -vvv
 
 install:
-	poetry install --with=dev
+	poetry install --sync --with=dev --no-root
+
+help:
+	poetry run git-append --help
