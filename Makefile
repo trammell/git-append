@@ -1,7 +1,15 @@
 usage:
 	@echo "usage: make [test]"
 
+format:
+	poetry run black src/
+
+lint:
+	poetry run flake8 src/
+	poetry run pydocstyle src/
+
 test:
-	poetry run black git-append
-	poetry run flake8 git-append
-	poetry run pydocstyle git-append
+	poetry run pytest tests/
+
+install:
+	poetry install --with=dev
