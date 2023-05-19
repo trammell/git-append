@@ -32,6 +32,14 @@ skips = ["B404","B603","B607"]
 [tool.black]
 line-length = 79
 
+[tool.mypy]
+strict = "True"
+disallow_untyped_defs = "True"
+disallow_any_unimported = "True"
+no_implicit_optional = "True"
+check_untyped_defs = "True"
+warn_no_return = "True"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

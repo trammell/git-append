@@ -1,15 +1,16 @@
 """Command-line application for combining source files in git."""
 
 import argparse
+from argparse import ArgumentParser
 import logging
 import os
 import sys
 import subprocess
 
 
-def get_args():
+def get_argparser() -> ArgumentParser:
     """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(
+    parser = ArgumentParser(
         prog="git-append", description="Append and remove files in git"
     )
     parser.add_argument("--debug", "-d", action="store_true", default=False)
@@ -32,6 +33,11 @@ def get_args():
         type=argparse.FileType("a"),
         help="Destination file to be extended with source contents",
     )
+    return parser
+
+
+def main(parser: ArgumentParser) -> None:
+    """Parse command-line arguments and manage file appending."""
     args = parser.parse_args()
     logging.basicConfig(format=">>> %(message)s", level=get_log_level(args))
     logging.debug(args)
@@ -41,10 +47,6 @@ def get_args():
         logging.error("found dstfile in srcfile list, that's bad")
         exit(1)
 
-    main(args)
-
-
-def main(args):
     """Append args.srcfile to args.destfile."""
     bytes = 0
     for srcfile in args.srcfile:
@@ -62,7 +64,7 @@ def main(args):
     sys.stderr.write(f"Wrote {bytes} bytes to file '{args.dstfile.name}'.\n")
 
 
-def force_remove(filename):
+def force_remove(filename: str) -> None:
     """Remove file filename.
 
     If the file is in github, remove it with `git rm -f`, otherwise remove it
@@ -90,7 +92,7 @@ def file_in_repo(filename: str) -> bool:
     return proc.returncode == 0
 
 
-def get_log_level(args):
+def get_log_level(args: argparse.Namespace) -> int:
     """Decide the logging level from the command-line arguments."""
     if args.debug:
         return logging.DEBUG
