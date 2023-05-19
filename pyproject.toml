@@ -1,6 +1,3 @@
-[tool.black]
-line-length = 80
-
 [tool.poetry]
 name = "git-append"
 version = "0.1.0"
@@ -8,10 +5,13 @@ description = "File append manager within git"
 authors = ["John Trammell <john.trammell@gmail.com>"]
 license = "Apache-2.0"
 readme = "README.md"
-packages = [{include = "git_append"}]
+packages = [{include = "git_append", from="src"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+flake8-bugbear = "^23.5.9"
+mypy = "^1.3.0"
+bandit = "^1.7.5"
 
 [tool.poetry.group.dev]
 optional = true
@@ -20,6 +20,17 @@ optional = true
 black = "^23.3.0"
 flake8 = "^6.0.0"
 pydocstyle = "^6.3.0"
+pytest = "^7.3.1"
+mypy = "^1.3.0"
+
+[tool.poetry.scripts]
+git-append = "git_append:main"
+
+[tool.bandit]
+skips = ["B404","B603","B607"]
+
+[tool.black]
+line-length = 79
 
 [build-system]
 requires = ["poetry-core"]

@@ -2,8 +2,16 @@
 
 A tool for appending files in git.
 
+## Usage
 
-## `.direnv` Configuration
+To append file `foo` to file `bar`:
+
+
+
+
+
+
+### Note on `.direnv` Configuration
 
 To use the automatic `direnv` config for `poetry`:
 

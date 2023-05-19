@@ -1,10 +1,47 @@
-#!/usr/bin/env python3
+"""Command-line application for combining source files in git."""
 
 import argparse
 import logging
 import os
 import sys
 import subprocess
+
+
+def get_args():
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(
+        prog="git-append", description="Append and remove files in git"
+    )
+    parser.add_argument("--debug", "-d", action="store_true", default=False)
+    parser.add_argument("--verbose", "-v", action="store_true", default=False)
+    parser.add_argument(
+        "--dry-run",
+        action=argparse.BooleanOptionalAction,
+        dest="dryrun",
+        default=False,
+        help="A 'dry-run' makes no file changes",
+    )
+    parser.add_argument(
+        "srcfile",
+        nargs="+",
+        type=argparse.FileType("r"),
+        help="Source file to be appended to dstfile and removed",
+    )
+    parser.add_argument(
+        "dstfile",
+        type=argparse.FileType("a"),
+        help="Destination file to be extended with source contents",
+    )
+    args = parser.parse_args()
+    logging.basicConfig(format=">>> %(message)s", level=get_log_level(args))
+    logging.debug(args)
+
+    # check for srcfile==dstfile
+    if args.dstfile.name in [x.name for x in args.srcfile]:
+        logging.error("found dstfile in srcfile list, that's bad")
+        exit(1)
+
+    main(args)
 
 
 def main(args):
@@ -44,10 +81,8 @@ def force_remove(filename):
         os.remove(filename)
 
 
-def file_in_repo(filename):
-    """
-    Return True if filename is tracked in git, False otherwise.
-    """
+def file_in_repo(filename: str) -> bool:
+    """Return True if filename is tracked in git, False otherwise."""
     proc = subprocess.run(
         ["git", "ls-files", "--error-unmatch", filename], capture_output=True
     )
@@ -56,44 +91,9 @@ def file_in_repo(filename):
 
 
 def get_log_level(args):
+    """Decide the logging level from the command-line arguments."""
     if args.debug:
         return logging.DEBUG
     if args.verbose:
         return logging.INFO
     return logging.WARNING
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        prog="git-append", description="Append and remove files in git"
-    )
-    parser.add_argument("--debug", "-d", action="store_true", default=False)
-    parser.add_argument("--verbose", "-v", action="store_true", default=False)
-    parser.add_argument(
-        "--dry-run",
-        action=argparse.BooleanOptionalAction,
-        dest="dryrun",
-        default=False,
-        help="A 'dry-run' makes no file changes",
-    )
-    parser.add_argument(
-        "srcfile",
-        nargs="+",
-        type=argparse.FileType("r"),
-        help="Source file to be appended to dstfile and removed",
-    )
-    parser.add_argument(
-        "dstfile",
-        type=argparse.FileType("a"),
-        help="Destination file to be extended with source contents",
-    )
-    args = parser.parse_args()
-    logging.basicConfig(format=">>> %(message)s", level=get_log_level(args))
-    logging.debug(args)
-
-    # check for srcfile==dstfile
-    if args.dstfile.name in [x.name for x in args.srcfile]:
-        logging.error(f"found dstfile in srcfile list, that's bad")
-        exit(1)
-
-    main(args)
