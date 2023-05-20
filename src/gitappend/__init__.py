@@ -8,6 +8,8 @@ import sys
 import subprocess
 from shlex import quote
 import pathlib
+from typing import Optional
+from functools import cache
 
 
 def get_argparser() -> ArgumentParser:
@@ -72,21 +74,28 @@ def main() -> None:
     )
 
 
-def git_root(filename: str) -> str:
+@cache
+def git_root(filename: str) -> Optional[str]:
     """Find the parent folder containing a .git/ subfolder."""
     # I genuinely do not like this.
     p = pathlib.Path(filename)
     seen = {}
-    while True:
+
+    # traverse 100 directories deep looking for the git root folder
+    for _ in range(100):
         if p.is_file():
             p = p.parent
         elif p in seen:
+            # we've been here before?!?!?!
             return None
         elif p.is_dir():
             seen[p] = True
             tmp = p / ".git"
             if tmp.exists():
-                return p
+                return p.as_posix()
+
+    # give up if we haven't found it yet
+    return None
 
 
 def remove_file(filename: str) -> None:

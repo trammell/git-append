@@ -1,6 +1,5 @@
-from gitappend import git_root, in_index
+from gitappend import in_index
 from typing import Any
-import sys
 import subprocess
 
 

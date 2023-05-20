@@ -5,8 +5,11 @@ from typing import Any
 
 
 def test_simple(tmp_path: Any) -> None:
-    """Simulate call `git-append foo bar`, which appends `bar` to `foo`."""
+    """Simulate call `git-append foo bar`.
 
+    This test just checks that argparse is behaving correctly. Destination file
+    is foo, source file is bar.
+    """
     # set up the test files
     d = tmp_path / "test_simple"
     d.mkdir()
