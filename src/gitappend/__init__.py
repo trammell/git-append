@@ -7,6 +7,7 @@ import os
 import sys
 import subprocess
 from shlex import quote
+import pathlib
 
 
 def get_argparser() -> ArgumentParser:
@@ -71,13 +72,30 @@ def main() -> None:
     )
 
 
+def git_root(filename: str) -> str:
+    """Find the parent folder containing a .git/ subfolder."""
+    # I genuinely do not like this.
+    p = pathlib.Path(filename)
+    seen = {}
+    while True:
+        if p.is_file():
+            p = p.parent
+        elif p in seen:
+            return None
+        elif p.is_dir():
+            seen[p] = True
+            tmp = p / ".git"
+            if tmp.exists():
+                return p
+
+
 def remove_file(filename: str) -> None:
     """Remove file filename.
 
     If the file is tracked in the github index, remove it with `git rm -f`,
     otherwise remove it with `rm -f`.
     """
-    if file_in_index(filename):
+    if in_index(filename):
         logging.info(f"file {quote(filename)} is in the repo")
         logging.debug(f"calling: git rm -f '{quote(filename)}'")
         proc = subprocess.run(
@@ -90,10 +108,13 @@ def remove_file(filename: str) -> None:
         os.remove(filename)
 
 
-def file_in_index(filename: str) -> bool:
-    """Return True if filename is tracked in git, False otherwise."""
+def in_index(filename: str) -> bool:
+    """Return True if `filename` is tracked in git, False otherwise."""
+    # FIXME: should filename be an absolute path? That seems important.
     proc = subprocess.run(
-        ["git", "ls-files", "--error-unmatch", filename], capture_output=True
+        ["git", "ls-files", "--error-unmatch", filename],
+        capture_output=True,
+        cwd=git_root(filename),
     )
     logging.debug(proc)
     return proc.returncode == 0

@@ -2,7 +2,7 @@ usage:
 	@echo "usage: make [test]"
 
 format:
-	poetry run black src/
+	poetry run black src/ tests/
 
 lint:
 	poetry check

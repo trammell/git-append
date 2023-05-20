@@ -33,7 +33,7 @@ def test_simple(tmp_path: Any) -> None:
     # check the source files (there should be only one)
     srcfiles = args.srcfiles
     assert len(srcfiles) == 1
-    srcfile = Path(srcfiles[0].name).name   # kek
+    srcfile = Path(srcfiles[0].name).name  # kek
     assert srcfile == "bar"
 
     # check the destination file
