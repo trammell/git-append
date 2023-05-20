@@ -6,6 +6,7 @@ import logging
 import os
 import sys
 import subprocess
+from shlex import quote
 
 
 def get_argparser() -> ArgumentParser:
@@ -46,7 +47,7 @@ def main() -> None:
     # check for dstfile in *srcfiles
     if args.dstfile.name in [x.name for x in args.srcfiles]:
         logging.error(
-            f"found destination file '{args.dstfile.name}'"
+            f"found destination file '{quote(args.dstfile.name)}'"
             "in list of source files, that's bad"
         )
         exit(1)
@@ -60,34 +61,36 @@ def main() -> None:
             logging.info("""Dry run: no changes""")
         else:
             logging.info(
-                f"""Appending {len(tmp)} bytes to {args.dstfile.name}"""
+                f"""Appending {len(tmp)} bytes to {quote(args.dstfile.name)}"""
             )
             args.dstfile.write(tmp)
-            force_remove(srcfile.name)
+            remove_file(srcfile.name)
 
-    sys.stderr.write(f"Wrote {bytes} bytes to file '{args.dstfile.name}'.\n")
+    sys.stderr.write(
+        f"Wrote {bytes} bytes to file '{quote(args.dstfile.name)}'.\n"
+    )
 
 
-def force_remove(filename: str) -> None:
+def remove_file(filename: str) -> None:
     """Remove file filename.
 
-    If the file is in github, remove it with `git rm -f`, otherwise remove it
-    with `rm -f`.
+    If the file is tracked in the github index, remove it with `git rm -f`,
+    otherwise remove it with `rm -f`.
     """
-    if file_in_repo(filename):
-        logging.info(f"file {filename} is in the repo")
-        logging.debug(f"calling: git rm -f '{filename}'")
+    if file_in_index(filename):
+        logging.info(f"file {quote(filename)} is in the repo")
+        logging.debug(f"calling: git rm -f '{quote(filename)}'")
         proc = subprocess.run(
             ["git", "rm", "--force", filename], capture_output=True
         )
         logging.debug(proc)
     else:
-        logging.info(f"file {filename} is NOT in the repo")
-        logging.debug(f"calling: os.remove({filename})")
+        logging.info(f"file {quote(filename)} is NOT in the repo")
+        logging.debug(f"calling: os.remove({quote(filename)})")
         os.remove(filename)
 
 
-def file_in_repo(filename: str) -> bool:
+def file_in_index(filename: str) -> bool:
     """Return True if filename is tracked in git, False otherwise."""
     proc = subprocess.run(
         ["git", "ls-files", "--error-unmatch", filename], capture_output=True
