@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "git-append"
-version = "0.1.0"
+version = "1.1.0"
 description = "Concatenate files gracefully within git"
 authors = ["John Trammell <john.trammell@gmail.com>"]
 license = "Apache-2.0"
